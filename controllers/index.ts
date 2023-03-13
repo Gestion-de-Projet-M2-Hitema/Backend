@@ -1,3 +1,3 @@
 export = {
-  // user: require("./user"),
+  users: require("./users"),
 };
