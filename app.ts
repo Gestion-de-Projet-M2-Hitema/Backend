@@ -1,11 +1,8 @@
-import express, { Express, Request, Response } from "express";
+import express, { Express } from "express";
 import cors from "cors";
 import * as dotenv from "dotenv";
-const PocketBase = require('pocketbase/cjs');
 
 dotenv.config();
-
-const pb = new PocketBase(process.env.POCKETBASE_URL);
 
 // Initialization of Express
 const app: Express = express();
@@ -22,16 +19,9 @@ const corsOptions: Object = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// First route
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello World !");
-});
+// Import routes
+const routes = require("./routes");
 
-// Get users collections from pocketbase
-app.get("/users", async (req: Request, res: Response) => {
-  await pb.admins.authWithPassword(process.env.POCKETBASE_USERNAME, process.env.POCKETBASE_PASSWORD);
-  const records = await pb.collection('users').getFullList();
-  res.send(records);
-});
+app.use("/api/v1", routes);
 
 export = app;
