@@ -5,6 +5,7 @@ dotenv.config();
 
 // Validation
 import joi, { ObjectSchema, ValidationResult } from "joi";
+import { buildJoiError } from "../utils/errors.utils";
 
 // JWT + dotenv + check for the presence of an environment variable
 import jwt from "jsonwebtoken";
@@ -14,28 +15,24 @@ const pb = require("../db");
 
 export const register = async (req: Request, res: Response) => {
   const payload: Object = req.body;
-  const schema: ObjectSchema = joi.object({
-    username: joi.string().min(2).max(50).required(),
-    email: joi.string().max(255).required().email(),
-    password: joi.string().min(6).max(72).required(),
-    passwordConfirm: joi.string().min(6).max(72).required(),
-    name: joi.string().min(2).max(50).required(),
-  });
+  const schema: ObjectSchema = joi
+    .object({
+      username: joi.string().min(2).max(50).required(),
+      email: joi.string().max(255).required().email(),
+      password: joi.string().min(6).max(72).required(),
+      passwordConfirm: joi.string().min(6).max(72).required(),
+      name: joi.string().min(2).max(50).required(),
+    })
+    .options({ abortEarly: false });
 
   // Validate user's informations with Joi
   const dataValidated: ValidationResult = schema.validate(payload);
 
   // Manage validation errors
   if (dataValidated.error) {
-    const error: Record<string, any> = {};
-
-    const path: string | number = dataValidated.error.details[0].path[0];
-    const message: string = dataValidated.error.details[0].message
-      .replace('"' + path.toString() + '"', "")
-      .trim();
-
-    error[path] = message;
-
+    const error: Record<string, any> = buildJoiError(
+      dataValidated.error.details
+    );
     return res.status(400).json({ error: error });
   }
 
@@ -61,13 +58,13 @@ export const register = async (req: Request, res: Response) => {
 
     if (err.data.data) {
       if (err.data.data.username) {
-        error.username = "Le nom d'utilisateur est déjà utilisé";
+        error.username = "Username is already used";
       }
       if (err.data.data.email) {
-        error.email = "L'email est déjà utilisé";
+        error.email = "Email is already used";
       }
       if (err.data.data.passwordConfirm) {
-        error.passwordConfirm = "Les mots de passe de correspondent pas";
+        error.passwordConfirm = "Passwords do not match";
       }
     }
     res.status(400).json({ error: error });
@@ -77,25 +74,21 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   const payload: Object = req.body;
-  const schema: ObjectSchema = joi.object({
-    email: joi.string().max(255).required().email(),
-    password: joi.string().min(6).max(72).required(),
-  });
+  const schema: ObjectSchema = joi
+    .object({
+      email: joi.string().max(255).required().email(),
+      password: joi.string().min(6).max(72).required(),
+    })
+    .options({ abortEarly: false });
 
   // Validate user's informations with Joi
   const dataValidated: ValidationResult = schema.validate(payload);
 
   // Manage validation errors
   if (dataValidated.error) {
-    const error: Record<string, any> = {};
-
-    const path: string | number = dataValidated.error.details[0].path[0];
-    const message: string = dataValidated.error.details[0].message
-      .replace('"' + path.toString() + '"', "")
-      .trim();
-
-    error[path] = message;
-
+    const error: Record<string, any> = buildJoiError(
+      dataValidated.error.details
+    );
     return res.status(400).json({ error: error });
   }
 
@@ -127,7 +120,7 @@ export const login = async (req: Request, res: Response) => {
       .status(200)
       .json({ username: user.username, name: user.name, avatar: user.avatar });
   } catch (err: any) {
-    res.status(400).json({ error: "Email ou mot de passe incorrect" });
+    res.status(400).json({ error: "Incorrect email or password" });
     return;
   }
 };
