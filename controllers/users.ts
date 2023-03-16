@@ -8,7 +8,7 @@ import joi, { ObjectSchema, ValidationResult } from "joi";
 import { buildJoiError } from "../utils/errors.utils";
 
 // JWT + dotenv + check for the presence of an environment variable
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 // Database
 const pb = require("../db");
@@ -121,6 +121,54 @@ export const login = async (req: Request, res: Response) => {
       .json({ username: user.username, name: user.name, avatar: user.avatar });
   } catch (err: any) {
     res.status(400).json({ error: "Incorrect email or password" });
+    return;
+  }
+};
+
+// update user's informations
+export const update = async (req: Request, res: Response) => {
+  const payload: Object = req.body;
+  const cookie: string = req.cookies.jwt;
+  const privateKey = process.env.JWT_PRIVATE_KEY;
+
+  if (!privateKey) {
+    res.sendStatus(400);
+    return;
+  }
+
+  // Decode the JWT token
+  const decoded: JwtPayload & { id: string } = jwt.verify(cookie, privateKey) as JwtPayload & { id: string };
+
+  const schema: ObjectSchema = joi
+    .object({
+      username: joi.string().min(2).max(50).required(),
+      name: joi.string().min(2).max(50).required(),
+    })
+    .options({ abortEarly: false });
+
+  // Validate user's informations with Joi
+  const dataValidated: ValidationResult = schema.validate(payload);
+
+  // Manage validation errors
+  if (dataValidated.error) {
+    const error: Record<string, any> = buildJoiError(
+      dataValidated.error.details
+    );
+    return res.status(400).json({ error: error });
+  }
+
+  try {
+    const user = await pb.collection("users").update(decoded.id, dataValidated.value);
+    res.sendStatus(200);
+  } catch (err: any) {
+    const error: Record<string, any> = {};
+
+    if (err.data.data) {
+      if (err.data.data.username) {
+        error.username = "Username is already used";
+      }
+    }
+    res.status(400).json({ error: error });
     return;
   }
 };
