@@ -172,3 +172,47 @@ export const update = async (req: Request, res: Response) => {
     return;
   }
 };
+
+// update user's avatar
+export const upload = async (req: Request, res: Response) => {
+  const cookie: string = req.cookies.jwt;
+  const privateKey = process.env.JWT_PRIVATE_KEY;
+
+  // check if file exist in the request
+  if (!req.file) {
+    res.sendStatus(400).json({ error: "No file uploaded" });
+    return;
+  }
+
+  // check if the file is an image
+  if (!req.file.mimetype.startsWith("image")) {
+    res.sendStatus(400).json({ error: "File is not an image" });
+    return;
+  }
+
+  // Create a FormData object to send the file to PocketBase
+  let form = new FormData();
+
+  form.append("avatar", new Blob([req.file.buffer]), req.file.originalname);
+
+  if (!privateKey) {
+    res.sendStatus(400);
+    return;
+  }
+
+  // Decode the JWT token
+  const decoded: JwtPayload & { id: string } = jwt.verify(cookie, privateKey) as JwtPayload & { id: string };
+
+  try {
+    const user = await pb.collection("users").update(decoded.id, form);
+
+    // Set the URL of the avatar image
+    if (user.avatar) {
+      user.avatar = pb.getFileUrl(user, user.avatar);
+    }
+    res.status(200).json({ avatar: user.avatar });
+  } catch (err: any) {
+    res.status(400);
+    return;
+  }
+}

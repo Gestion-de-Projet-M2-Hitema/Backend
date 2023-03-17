@@ -18,6 +18,7 @@
     "@types/cors": "^2.8.13",
     "@types/express": "^4.17.17",
     "@types/joi": "^17.2.3",
+    "@types/multer": "^1.4.7",
     "@types/node": "^18.15.1",
     "concurrently": "^7.6.0",
     "jest": "^29.5.0",
@@ -36,6 +37,7 @@
     "express-async-errors": "^3.1.1",
     "joi": "^17.8.3",
     "jsonwebtoken": "^9.0.0",
+    "multer": "^1.4.5-lts.1",
     "pocketbase": "^0.12.1",
     "socket.io": "^4.6.1"
   }
