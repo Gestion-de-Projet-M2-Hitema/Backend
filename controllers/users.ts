@@ -216,3 +216,52 @@ export const upload = async (req: Request, res: Response) => {
     return;
   }
 }
+
+// Update user's password
+export const updatePassword = async (req: Request, res: Response) => {
+  const payload: Object = req.body;
+  const cookie: string = req.cookies.jwt;
+  const privateKey = process.env.JWT_PRIVATE_KEY;
+
+  if (!privateKey) {
+    res.sendStatus(400);
+    return;
+  }
+
+  // Decode the JWT token
+  const decoded: JwtPayload & { id: string } = jwt.verify(cookie, privateKey) as JwtPayload & { id: string };
+
+  const schema: ObjectSchema = joi
+    .object({
+      oldPassword: joi.string().min(6).max(72).required(),
+      password: joi.string().min(6).max(72).required(),
+      passwordConfirm: joi.string().min(6).max(72).required(),
+    })
+    .options({ abortEarly: false });
+
+  // Validate user's informations with Joi
+  const dataValidated: ValidationResult = schema.validate(payload);
+
+  // Manage validation errors
+  if (dataValidated.error) {
+    const error: Record<string, any> = buildJoiError(
+      dataValidated.error.details
+    );
+    return res.status(400).json({ error: error });
+  }
+
+  try {
+    const user = await pb.collection("users").update(decoded.id, dataValidated.value);
+    res.sendStatus(200);
+  } catch (err: any) {
+    const error: Record<string, any> = {};
+
+    if (err.data.data) {
+      if (err.data.data.passwordConfirm) {
+        error.passwordConfirm = "Passwords do not match";
+      }
+    }
+    res.status(400).json({ error: error });
+    return;
+  }
+}
