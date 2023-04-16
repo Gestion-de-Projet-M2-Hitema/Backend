@@ -8,7 +8,7 @@ import joi, { ObjectSchema, ValidationResult } from "joi";
 import { buildJoiError } from "../utils/errors.utils";
 
 // JWT + dotenv + check for the presence of an environment variable
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 // Database
 const pb = require("../db");
@@ -121,6 +121,120 @@ export const login = async (req: Request, res: Response) => {
       .json({ username: user.username, name: user.name, avatar: user.avatar });
   } catch (err: any) {
     res.status(400).json({ error: "Incorrect email or password" });
+    return;
+  }
+};
+
+// update user's informations
+export const update = async (req: Request, res: Response) => {
+  const payload: Object = req.body;
+  const userInfo = req.app.locals.user;
+
+  const schema: ObjectSchema = joi
+    .object({
+      username: joi.string().min(2).max(50).required(),
+      name: joi.string().min(2).max(50).required(),
+    })
+    .options({ abortEarly: false });
+
+  // Validate user's informations with Joi
+  const dataValidated: ValidationResult = schema.validate(payload);
+
+  // Manage validation errors
+  if (dataValidated.error) {
+    const error: Record<string, any> = buildJoiError(
+      dataValidated.error.details
+    );
+    return res.status(400).json({ error: error });
+  }
+
+  try {
+    await pb.collection("users").update(userInfo.id, dataValidated.value);
+    res.sendStatus(200);
+  } catch (err: any) {
+    const error: Record<string, any> = {};
+
+    if (err.data.data) {
+      if (err.data.data.username) {
+        error.username = "Username is already used";
+      }
+    }
+    res.status(400).json({ error: error });
+    return;
+  }
+};
+
+// update user's avatar
+export const upload = async (req: Request, res: Response) => {
+  const userInfo = req.app.locals.user;
+
+  // check if file exist in the request
+  if (!req.file) {
+    res.status(400).json({ error: "No file uploaded" });
+    return;
+  }
+
+  // check if the file is an image
+  if (!req.file.mimetype.startsWith("image")) {
+    res.status(400).json({ error: "File is not an image" });
+    return;
+  }
+
+  // Create a FormData object to send the file to PocketBase
+  let form = new FormData();
+
+  form.append("avatar", new Blob([req.file.buffer]), req.file.originalname);
+
+  try {
+    const user = await pb.collection("users").update(userInfo.id, form);
+
+    // Set the URL of the avatar image
+    if (user.avatar) {
+      user.avatar = pb.getFileUrl(user, user.avatar);
+    }
+    res.status(200).json({ avatar: user.avatar });
+  } catch (err: any) {
+    res.status(400);
+    return;
+  }
+};
+
+// Update user's password
+export const updatePassword = async (req: Request, res: Response) => {
+  const payload: Object = req.body;
+  const userInfo = req.app.locals.user;
+
+  const schema: ObjectSchema = joi
+    .object({
+      oldPassword: joi.string().min(6).max(72).required(),
+      password: joi.string().min(6).max(72).required(),
+      passwordConfirm: joi.string().min(6).max(72).required(),
+    })
+    .options({ abortEarly: false });
+
+  // Validate user's informations with Joi
+  const dataValidated: ValidationResult = schema.validate(payload);
+
+  // Manage validation errors
+  if (dataValidated.error) {
+    const error: Record<string, any> = buildJoiError(
+      dataValidated.error.details
+    );
+    return res.status(400).json({ error: error });
+  }
+
+  try {
+    await pb.collection("users").update(userInfo.id, dataValidated.value);
+    res.sendStatus(200);
+  } catch (err: any) {
+    const error: Record<string, any> = {};
+
+    if (err.data.data) {
+      if (err.data.data.passwordConfirm) {
+        error.passwordConfirm = "Passwords do not match";
+      }
+    }
+    res.status(400).json({ error: error });
     return;
   }
 };
