@@ -1,11 +1,27 @@
 import { createServer } from "http";
 import { Server } from "socket.io";
 import app from "./app";
-import { MySocket } from "./middlewares/websocket.middlewars";
+import { MyError } from "./utils/errors.utils";
+
+// Initialize Websocket types
+interface ClientToServerEvents {}
+interface ServerToClientEvents {
+  error: (data: object) => void;
+}
+interface InterServerEvents {}
+interface SocketData {
+  eventTriggered: string | undefined;
+  userId: string | undefined;
+}
 
 // Initialize websocket server
 export const httpServer = createServer(app);
-export const io = new Server<MySocket>(httpServer, {
+export const io = new Server<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>(httpServer, {
   cors: {
     origin: (origin: any, callback: Function) => {
       callback(null, true);
@@ -23,11 +39,17 @@ import socketControllers from "./events";
 
 // Websocket Manager
 io.on("connection", (socket) => {
-  console.log(`[CONNECTION] ${socket.id}`);
-
   socketMiddlewares(socket);
   socketControllers(io, socket);
 
+  // Manage Error
+  socket.on("error", (err) => {
+    const myError = <MyError>err;
+    const error = { error: myError.name, event: myError.event };
+
+    socket.emit("error", error);
+  });
+
   // Client disconnection
-  socket.on("disconnect", () => console.log(`[DISCONNECTION] ${socket.id}`));
+  socket.on("disconnect", () => {});
 });
