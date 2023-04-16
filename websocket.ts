@@ -23,9 +23,7 @@ export const io = new Server<
   SocketData
 >(httpServer, {
   cors: {
-    origin: (origin: any, callback: Function) => {
-      callback(null, true);
-    },
+    origin: "*",
     methods: ["GET", "POST"],
     credentials: true,
   },
