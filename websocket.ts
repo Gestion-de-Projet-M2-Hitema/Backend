@@ -22,8 +22,11 @@ export const io = new Server<
   InterServerEvents,
   SocketData
 >(httpServer, {
+  allowRequest: (req, callback) => {
+    callback(null, true);
+  },
   cors: {
-    origin: "*",
+    // origin: "*",
     methods: ["GET", "POST"],
     credentials: true,
   },
