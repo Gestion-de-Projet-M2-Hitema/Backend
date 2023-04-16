@@ -5,6 +5,7 @@ import multer from "multer";
 import {
   register,
   login,
+  logout,
   update,
   upload,
   updatePassword,
@@ -18,6 +19,7 @@ const router: Router = express.Router();
 
 router.post("/register", register);
 router.post("/login", login);
+router.get("/logout", [authGuard], logout);
 
 router.post("/updatePassword", [authGuard], updatePassword);
 router.post("/upload", [authGuard, m.single("avatar")], upload);
