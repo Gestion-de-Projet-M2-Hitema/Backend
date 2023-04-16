@@ -12,3 +12,16 @@ export const buildJoiError = (joiError: Array<Record<string, any>>) => {
 
   return errors;
 };
+
+export interface MyError extends Error {
+  event: string | undefined;
+}
+
+export const buildSocketError = (name: string, event: string) => {
+  const error = <MyError>new Error();
+
+  error.name = name;
+  error.event = event;
+
+  return error;
+};
