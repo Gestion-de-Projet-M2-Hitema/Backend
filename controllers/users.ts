@@ -128,16 +128,7 @@ export const login = async (req: Request, res: Response) => {
 // update user's informations
 export const update = async (req: Request, res: Response) => {
   const payload: Object = req.body;
-  const cookie: string = req.cookies.jwt;
-  const privateKey = process.env.JWT_PRIVATE_KEY;
-
-  if (!privateKey) {
-    res.sendStatus(400);
-    return;
-  }
-
-  // Decode the JWT token
-  const decoded: JwtPayload & { id: string } = jwt.verify(cookie, privateKey) as JwtPayload & { id: string };
+  const userInfo = req.app.locals.user;
 
   const schema: ObjectSchema = joi
     .object({
@@ -158,7 +149,7 @@ export const update = async (req: Request, res: Response) => {
   }
 
   try {
-    const user = await pb.collection("users").update(decoded.id, dataValidated.value);
+    await pb.collection("users").update(userInfo.id, dataValidated.value);
     res.sendStatus(200);
   } catch (err: any) {
     const error: Record<string, any> = {};
@@ -175,18 +166,17 @@ export const update = async (req: Request, res: Response) => {
 
 // update user's avatar
 export const upload = async (req: Request, res: Response) => {
-  const cookie: string = req.cookies.jwt;
-  const privateKey = process.env.JWT_PRIVATE_KEY;
+  const userInfo = req.app.locals.user;
 
   // check if file exist in the request
   if (!req.file) {
-    res.sendStatus(400).json({ error: "No file uploaded" });
+    res.status(400).json({ error: "No file uploaded" });
     return;
   }
 
   // check if the file is an image
   if (!req.file.mimetype.startsWith("image")) {
-    res.sendStatus(400).json({ error: "File is not an image" });
+    res.status(400).json({ error: "File is not an image" });
     return;
   }
 
@@ -195,16 +185,8 @@ export const upload = async (req: Request, res: Response) => {
 
   form.append("avatar", new Blob([req.file.buffer]), req.file.originalname);
 
-  if (!privateKey) {
-    res.sendStatus(400);
-    return;
-  }
-
-  // Decode the JWT token
-  const decoded: JwtPayload & { id: string } = jwt.verify(cookie, privateKey) as JwtPayload & { id: string };
-
   try {
-    const user = await pb.collection("users").update(decoded.id, form);
+    const user = await pb.collection("users").update(userInfo.id, form);
 
     // Set the URL of the avatar image
     if (user.avatar) {
@@ -215,21 +197,12 @@ export const upload = async (req: Request, res: Response) => {
     res.status(400);
     return;
   }
-}
+};
 
 // Update user's password
 export const updatePassword = async (req: Request, res: Response) => {
   const payload: Object = req.body;
-  const cookie: string = req.cookies.jwt;
-  const privateKey = process.env.JWT_PRIVATE_KEY;
-
-  if (!privateKey) {
-    res.sendStatus(400);
-    return;
-  }
-
-  // Decode the JWT token
-  const decoded: JwtPayload & { id: string } = jwt.verify(cookie, privateKey) as JwtPayload & { id: string };
+  const userInfo = req.app.locals.user;
 
   const schema: ObjectSchema = joi
     .object({
@@ -251,7 +224,7 @@ export const updatePassword = async (req: Request, res: Response) => {
   }
 
   try {
-    const user = await pb.collection("users").update(decoded.id, dataValidated.value);
+    await pb.collection("users").update(userInfo.id, dataValidated.value);
     res.sendStatus(200);
   } catch (err: any) {
     const error: Record<string, any> = {};
@@ -264,4 +237,4 @@ export const updatePassword = async (req: Request, res: Response) => {
     res.status(400).json({ error: error });
     return;
   }
-}
+};
