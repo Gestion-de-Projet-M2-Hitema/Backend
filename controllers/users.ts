@@ -329,3 +329,25 @@ export const get = async (req: Request, res: Response) => {
     return;
   }
 };
+
+// Get informations from connected user
+export const getMe = async (req: Request, res: Response) => {
+  const userInfo = req.app.locals.user;
+
+  try {
+    const user = await pb.collection("users").getOne(userInfo.id);
+
+    const avatar = user.avatar ? pb.getFileUrl(user, user.avatar) : null;
+
+    const data = {
+      ...user,
+      avatar: avatar,
+    };
+
+    res.status(200).json(data);
+    return;
+  } catch (err: any) {
+    res.status(400);
+    return;
+  }
+};
