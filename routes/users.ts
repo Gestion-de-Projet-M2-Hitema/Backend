@@ -10,7 +10,8 @@ import {
   upload,
   updatePassword,
   list,
-  get
+  get,
+  getMe
 } from "../controllers/users";
 
 // Import middlewares
@@ -24,6 +25,7 @@ router.post("/login", login);
 router.get("/logout", [authGuard], logout);
 
 router.get("/get/:id", [authGuard], get);
+router.get("/me", [authGuard], getMe);
 
 router.post("/updatePassword", [authGuard], updatePassword);
 router.post("/upload", [authGuard, m.single("avatar")], upload);
