@@ -13,6 +13,18 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 // Database
 const pb = require("../db");
 
+export type User = {
+  id: string;
+  avatar: string;
+  username: string;
+  email: string;
+  name: string;
+  emailVisibility: boolean;
+  verified: boolean;
+  created: Date;
+  updated: Date;
+};
+
 export const register = async (req: Request, res: Response) => {
   const payload: Object = req.body;
   const schema: ObjectSchema = joi
@@ -240,6 +252,80 @@ export const updatePassword = async (req: Request, res: Response) => {
       }
     }
     res.status(400).json({ error: error });
+    return;
+  }
+};
+
+// List all users paginated
+export const list = async (req: Request, res: Response) => {
+  // const page: number = parseInt(req.query.page as string) || 1;
+  // const limit: number = parseInt(req.query.limit as string) || 10;
+
+  const schema: ObjectSchema = joi
+    .object({
+      page: joi.number().min(1).required(),
+      limit: joi.number().min(1).required(),
+    })
+    .options({ abortEarly: false });
+
+  // Validate user's informations with Joi
+  const dataValidated: ValidationResult = schema.validate(req.query);
+
+  // Manage validation errors
+  if (dataValidated.error) {
+    const error: Record<string, any> = buildJoiError(
+      dataValidated.error.details
+    );
+    return res.status(400).json({ error: error });
+  }
+
+  const page: number = dataValidated.value.page;
+  const limit: number = dataValidated.value.limit;
+
+  // console.log(page, limit);
+
+  try {
+    const result = await pb.collection("users").getList(page, limit);
+
+    const items = result.items.map((user: User) => {
+      const avatar = user.avatar ? pb.getFileUrl(user, user.avatar) : null;
+      return {
+        ...user,
+        avatar: avatar,
+      };
+    });
+
+    const data = {
+      ...result,
+      items: items,
+    };
+
+    res.status(200).json(data);
+    return;
+  } catch (err: any) {
+    res.status(400);
+    return;
+  }
+};
+
+// Get user's informations
+export const get = async (req: Request, res: Response) => {
+  const userId: string = req.params.id;
+
+  try {
+    const user = await pb.collection("users").getOne(userId);
+
+    const avatar = user.avatar ? pb.getFileUrl(user, user.avatar) : null;
+
+    const data = {
+      ...user,
+      avatar: avatar,
+    };
+
+    res.status(200).json(data);
+    return;
+  } catch (err: any) {
+    res.status(400);
     return;
   }
 };
