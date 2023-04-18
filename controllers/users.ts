@@ -63,12 +63,7 @@ export const register = async (req: Request, res: Response) => {
 
     const token: string = jwt.sign({ id: user.id }, privateKey);
 
-    res.cookie("jwt", token, {
-      secure: process.env.DEV == "true" ? false : true,
-      httpOnly: false,
-      maxAge: 7 * (24 * 60 * 60 * 1000),
-    });
-    res.sendStatus(201);
+    res.status(201).json({ token: token });
   } catch (err: any) {
     const error: Record<string, any> = {};
 
@@ -131,29 +126,16 @@ export const login = async (req: Request, res: Response) => {
       user.avatar = pb.getFileUrl(user, user.avatar);
     }
 
-    res.cookie("jwt", token, {
-      secure: process.env.DEV == "true" ? false : true,
-      httpOnly: false,
-      maxAge: 7 * (24 * 60 * 60 * 1000),
+    res.status(200).json({
+      token: token,
+      username: user.username,
+      name: user.name,
+      avatar: user.avatar,
     });
-    res
-      .status(200)
-      .json({ username: user.username, name: user.name, avatar: user.avatar });
   } catch (err: any) {
     res.status(400).json({ error: "Incorrect email or password" });
     return;
   }
-};
-
-export const logout = (req: Request, res: Response) => {
-  res.cookie("jwt", "", {
-    sameSite: process.env.DEV == "true" ? undefined : "none",
-    secure: process.env.DEV == "true" ? false : true,
-    httpOnly: false,
-    domain: process.env.DEV == "true" ? undefined : "netlify.app",
-    maxAge: 1,
-  });
-  res.sendStatus(200);
 };
 
 // update user's informations

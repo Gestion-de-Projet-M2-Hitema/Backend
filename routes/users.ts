@@ -5,13 +5,12 @@ import multer from "multer";
 import {
   register,
   login,
-  logout,
   update,
   upload,
   updatePassword,
   list,
   get,
-  getMe
+  getMe,
 } from "../controllers/users";
 
 // Import middlewares
@@ -22,7 +21,6 @@ const router: Router = express.Router();
 
 router.post("/register", register);
 router.post("/login", login);
-router.get("/logout", [authGuard], logout);
 
 router.get("/get/:id", [authGuard], get);
 router.get("/me", [authGuard], getMe);
