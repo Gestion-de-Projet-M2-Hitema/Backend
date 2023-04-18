@@ -64,7 +64,6 @@ export const register = async (req: Request, res: Response) => {
     const token: string = jwt.sign({ id: user.id }, privateKey);
 
     res.cookie("jwt", token, {
-      sameSite: process.env.DEV == "true" ? undefined : "none",
       secure: process.env.DEV == "true" ? false : true,
       httpOnly: false,
       maxAge: 7 * (24 * 60 * 60 * 1000),
@@ -133,7 +132,6 @@ export const login = async (req: Request, res: Response) => {
     }
 
     res.cookie("jwt", token, {
-      sameSite: process.env.DEV == "true" ? undefined : "none",
       secure: process.env.DEV == "true" ? false : true,
       httpOnly: false,
       maxAge: 7 * (24 * 60 * 60 * 1000),
