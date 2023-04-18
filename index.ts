@@ -1,10 +1,10 @@
 import * as dotenv from "dotenv";
-import { httpServer } from "./websocket";
+import app from "./app";
 
 dotenv.config();
 
 const port = process.env.PORT || 3000;
 
-httpServer.listen(port, () => {
+app.listen(port, () => {
   console.log(`Server listening on port : ${port}`);
 });
