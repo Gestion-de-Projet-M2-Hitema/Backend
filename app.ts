@@ -8,10 +8,10 @@ dotenv.config();
 // Initialization of Express
 const app: Express = express();
 const corsOptions: Object = {
-  // origin: ["http://localhost:5173"],
-  origin: (origin: string, callback: Function) => {
-    callback(null, true);
-  },
+  origin: ["https://concorde.netlify.app", "http://localhost:5173"],
+  // origin: (origin: string, callback: Function) => {
+  //   callback(null, true);
+  // },
   credentials: true,
   allowedHeaders: ["sessionId", "Content-Type"],
   exposedHeaders: ["sessionId"],
