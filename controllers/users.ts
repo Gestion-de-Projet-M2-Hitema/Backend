@@ -67,7 +67,6 @@ export const register = async (req: Request, res: Response) => {
       sameSite: process.env.DEV == "true" ? undefined : "none",
       secure: process.env.DEV == "true" ? false : true,
       httpOnly: false,
-      domain: process.env.DEV == "true" ? undefined : "netlify.app",
       maxAge: 7 * (24 * 60 * 60 * 1000),
     });
     res.sendStatus(201);
@@ -137,7 +136,6 @@ export const login = async (req: Request, res: Response) => {
       sameSite: process.env.DEV == "true" ? undefined : "none",
       secure: process.env.DEV == "true" ? false : true,
       httpOnly: false,
-      domain: process.env.DEV == "true" ? undefined : "netlify.app",
       maxAge: 7 * (24 * 60 * 60 * 1000),
     });
     res
