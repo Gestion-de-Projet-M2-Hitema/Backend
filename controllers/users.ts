@@ -151,6 +151,8 @@ export const update = async (req: Request, res: Response) => {
     .object({
       username: joi.string().min(2).max(50).required(),
       name: joi.string().min(2).max(50).required(),
+      emailVisibility: joi.boolean(),
+      email: joi.string().email().max(255).required(),
     })
     .options({ abortEarly: false });
 
