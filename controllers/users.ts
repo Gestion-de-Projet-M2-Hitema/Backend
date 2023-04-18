@@ -65,6 +65,7 @@ export const register = async (req: Request, res: Response) => {
 
     res.cookie("jwt", token, {
       sameSite: "none",
+      secure: (process.env.DEV || false) == "true" ? true : false,
       maxAge: 7 * (24 * 60 * 60 * 1000),
     });
     res.sendStatus(201);
@@ -132,6 +133,7 @@ export const login = async (req: Request, res: Response) => {
 
     res.cookie("jwt", token, {
       sameSite: "none",
+      secure: (process.env.DEV || false) == "true" ? true : false,
       maxAge: 7 * (24 * 60 * 60 * 1000),
     });
     res
@@ -144,7 +146,11 @@ export const login = async (req: Request, res: Response) => {
 };
 
 export const logout = (req: Request, res: Response) => {
-  res.cookie("jwt", "", { sameSite: "none", maxAge: 1 });
+  res.cookie("jwt", "", {
+    sameSite: "none",
+    secure: (process.env.DEV || false) == "true" ? true : false,
+    maxAge: 1,
+  });
   res.sendStatus(200);
 };
 
