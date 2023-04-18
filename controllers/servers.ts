@@ -15,6 +15,7 @@ export type Server = {
   name: string;
   owner: string; // User ID
   channels: string[]; // Channel IDs
+  members: string[]; // User IDs
   created: Date;
   updated: Date;
 };
@@ -42,6 +43,7 @@ export const create = async (req: Request, res: Response) => {
   // Add default values to the validated data
   dataValidated.value.owner = req.app.locals.user.id;
   dataValidated.value.channels = [];
+  dataValidated.value.members = [req.app.locals.user.id];
 
   try {
     const server = await pb.collection("servers").create(dataValidated.value);
