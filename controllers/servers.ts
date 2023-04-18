@@ -49,7 +49,7 @@ export const create = async (req: Request, res: Response) => {
   } catch (err) {
     return res.status(400).json({ error: err });
   }
-}
+};
 
 // Update a server, only the owner can do it
 export const update = async (req: Request, res: Response) => {
@@ -71,7 +71,6 @@ export const update = async (req: Request, res: Response) => {
     return res.status(400).json({ error: error });
   }
 
-
   try {
     // check if the server exists
     const serverBefore = await pb.collection("servers").getOne(req.params.id);
@@ -81,15 +80,19 @@ export const update = async (req: Request, res: Response) => {
 
     // check if the user is the owner of the server
     if (serverBefore.owner !== req.app.locals.user.id) {
-      return res.status(403).json({ error: "You are not the owner of this server" });
+      return res
+        .status(403)
+        .json({ error: "You are not the owner of this server" });
     }
 
-    const server = await pb.collection("servers").update(req.params.id, dataValidated.value);
+    const server = await pb
+      .collection("servers")
+      .update(req.params.id, dataValidated.value);
     return res.status(201).json(server);
   } catch (err) {
     return res.status(400).json({ error: err });
   }
-}
+};
 
 // Delete a server, only the owner can do it
 export const remove = async (req: Request, res: Response) => {
@@ -102,11 +105,30 @@ export const remove = async (req: Request, res: Response) => {
 
     // check if the user is the owner of the server
     if (serverBefore.owner !== req.app.locals.user.id) {
-      return res.status(403).json({ error: "You are not the owner of this server" });
+      return res
+        .status(403)
+        .json({ error: "You are not the owner of this server" });
     }
     const server = await pb.collection("servers").delete(req.params.id);
     return res.status(201).json(server);
   } catch (err) {
     return res.status(400).json({ error: err });
   }
-}
+};
+
+// List all users paginated
+export const list = async (req: Request, res: Response) => {
+  const userInfo = req.app.locals.user;
+
+  try {
+    const result = await pb.collection("servers").getFullList({
+      filter: `members ~ "${userInfo.id}"`,
+    });
+
+    res.status(200).json(result);
+    return;
+  } catch (err: any) {
+    res.status(400);
+    return;
+  }
+};
