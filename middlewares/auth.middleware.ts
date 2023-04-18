@@ -5,7 +5,8 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 export const authGuard = (req: Request, res: Response, next: NextFunction) => {
-  const cookie: string = req.cookies.jwt;
+  const authHeader = req.header("authorization") || "";
+  const token = authHeader && authHeader.split(" ")[1];
   const privateKey = process.env.JWT_PRIVATE_KEY;
 
   if (!privateKey) {
@@ -16,7 +17,7 @@ export const authGuard = (req: Request, res: Response, next: NextFunction) => {
   // We decode the token
   try {
     const decoded: JwtPayload & { id: string } = jwt.verify(
-      cookie,
+      token,
       privateKey
     ) as JwtPayload & { id: string };
     req.app.locals.user = decoded;

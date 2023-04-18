@@ -1,6 +1,5 @@
 import express, { Express } from "express";
 import cors from "cors";
-import cookieParser from "cookie-parser";
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -22,7 +21,6 @@ const corsOptions: Object = {
 // We will need to parse the incoming json into req.body
 app.use(cors(corsOptions));
 app.use(express.json());
-app.use(cookieParser());
 
 // Import routes
 const routes = require("./routes");
