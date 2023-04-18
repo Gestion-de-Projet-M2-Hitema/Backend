@@ -137,3 +137,7 @@ export const list = async (req: Request, res: Response) => {
 
     return res.status(200).json(serverRequests);
   }
+  catch (err) {
+    return res.status(400).json({ error: err });
+  }
+}
