@@ -123,7 +123,7 @@ export const login = async (req: Request, res: Response) => {
 
     // Set the URL of the avatar image
     if (user.avatar) {
-      user.avatar = pb.getFileUrl(user, user.avatar);
+      user.avatar = pb.files.getUrl(user, user.avatar);
     }
 
     res.status(200).json({
@@ -205,7 +205,7 @@ export const upload = async (req: Request, res: Response) => {
 
     // Set the URL of the avatar image
     if (user.avatar) {
-      user.avatar = pb.getFileUrl(user, user.avatar);
+      user.avatar = pb.files.getUrl(user, user.avatar);
     }
     res.status(200).json({ avatar: user.avatar });
   } catch (err: any) {
@@ -286,7 +286,7 @@ export const list = async (req: Request, res: Response) => {
     const result = await pb.collection("users").getList(page, limit);
 
     const items = result.items.map((user: User) => {
-      const avatar = user.avatar ? pb.getFileUrl(user, user.avatar) : null;
+      const avatar = user.avatar ? pb.files.getUrl(user, user.avatar) : null;
       return {
         ...user,
         avatar: avatar,
@@ -313,7 +313,7 @@ export const get = async (req: Request, res: Response) => {
   try {
     const user = await pb.collection("users").getOne(userId);
 
-    const avatar = user.avatar ? pb.getFileUrl(user, user.avatar) : null;
+    const avatar = user.avatar ? pb.files.getUrl(user, user.avatar) : null;
 
     const data = {
       ...user,
@@ -335,7 +335,7 @@ export const getMe = async (req: Request, res: Response) => {
   try {
     const user = await pb.collection("users").getOne(userInfo.id);
 
-    const avatar = user.avatar ? pb.getFileUrl(user, user.avatar) : null;
+    const avatar = user.avatar ? pb.files.getUrl(user, user.avatar) : null;
 
     const data = {
       ...user,
