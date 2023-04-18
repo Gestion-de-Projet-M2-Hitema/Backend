@@ -63,7 +63,10 @@ export const register = async (req: Request, res: Response) => {
 
     const token: string = jwt.sign({ id: user.id }, privateKey);
 
-    res.cookie("jwt", token, { maxAge: 7 * (24 * 60 * 60 * 1000) });
+    res.cookie("jwt", token, {
+      sameSite: "none",
+      maxAge: 7 * (24 * 60 * 60 * 1000),
+    });
     res.sendStatus(201);
   } catch (err: any) {
     const error: Record<string, any> = {};
@@ -127,7 +130,10 @@ export const login = async (req: Request, res: Response) => {
       user.avatar = pb.getFileUrl(user, user.avatar);
     }
 
-    res.cookie("jwt", token, { maxAge: 7 * (24 * 60 * 60 * 1000) });
+    res.cookie("jwt", token, {
+      sameSite: "none",
+      maxAge: 7 * (24 * 60 * 60 * 1000),
+    });
     res
       .status(200)
       .json({ username: user.username, name: user.name, avatar: user.avatar });
@@ -138,7 +144,7 @@ export const login = async (req: Request, res: Response) => {
 };
 
 export const logout = (req: Request, res: Response) => {
-  res.cookie("jwt", "", { maxAge: 1 });
+  res.cookie("jwt", "", { sameSite: "none", maxAge: 1 });
   res.sendStatus(200);
 };
 
