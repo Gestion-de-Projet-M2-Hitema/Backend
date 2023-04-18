@@ -12,7 +12,7 @@ const corsOptions: Object = {
   //   callback(null, true);
   // },
   credentials: true,
-  allowedHeaders: ["sessionId", "Content-Type"],
+  allowedHeaders: ["sessionId", "Content-Type", "Authorization"],
   exposedHeaders: ["sessionId"],
   methods: "GET, HEAD, PUT, PATCH, POST, DELETE",
   preflightContinue: false,
