@@ -130,3 +130,34 @@ export const decline = async (req: Request, res: Response) => {
     return res.status(400).json({ error: err });
   }
 };
+
+// List all the user friends
+export const list = async (req: Request, res: Response) => {
+  const userInfo = req.app.locals.user;
+
+  try {
+    const user = await pb.collection("users").getOne(userInfo.id);
+    const friends: Record<string, string>[] = [];
+
+    for (const idFriend of user.friends) {
+      try {
+        const friend = await pb.collection("users").getOne(idFriend);
+        const avatar = friend.avatar
+          ? pb.files.getUrl(friend, friend.avatar)
+          : null;
+
+        friends.push({
+          id: friend.id,
+          username: friend.username,
+          avatar: avatar,
+        });
+      } catch (err: any) {}
+    }
+
+    res.status(200).json(friends);
+    return;
+  } catch (err: any) {
+    res.status(400);
+    return;
+  }
+};
