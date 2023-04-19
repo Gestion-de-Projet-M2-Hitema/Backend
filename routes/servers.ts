@@ -10,7 +10,7 @@ const router: Router = express.Router();
 
 router.post("/create", [authGuard], create);
 router.post("/update/:id", [authGuard], update);
-router.post("/remove", [authGuard], remove);
+router.post("/remove/:id", [authGuard], remove);
 
 router.get("/list", [authGuard], list);
 
