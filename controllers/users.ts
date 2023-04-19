@@ -342,10 +342,8 @@ export const getMe = async (req: Request, res: Response) => {
       avatar: avatar,
     };
 
-    res.status(200).json(data);
-    return;
+    return res.status(200).json(data);
   } catch (err: any) {
-    res.status(400);
-    return;
+    return res.status(400);
   }
 };
