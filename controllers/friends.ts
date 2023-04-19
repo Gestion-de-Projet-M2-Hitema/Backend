@@ -161,3 +161,36 @@ export const list = async (req: Request, res: Response) => {
     return;
   }
 };
+
+// List all the user friend requests
+export const listRequests = async (req: Request, res: Response) => {
+  const userInfo = req.app.locals.user;
+
+  try {
+    const listRequests = await pb.collection("friend_requests").getFullList({
+      filter: `to = "${userInfo.id}"`,
+    });
+    const requests: Record<string, string>[] = [];
+
+    for (const request of listRequests) {
+      try {
+        const friend = await pb.collection("users").getOne(request.from);
+        const avatar = friend.avatar
+          ? pb.files.getUrl(friend, friend.avatar)
+          : null;
+
+        requests.push({
+          id: friend.id,
+          username: friend.username,
+          avatar: avatar,
+        });
+      } catch (err: any) {}
+    }
+
+    res.status(200).json(requests);
+    return;
+  } catch (err: any) {
+    res.status(400);
+    return;
+  }
+};
