@@ -102,3 +102,31 @@ export const accept = async (req: Request, res: Response) => {
     return res.status(400).json({ error: err });
   }
 };
+
+// Decline a friend request
+export const decline = async (req: Request, res: Response) => {
+  const userInfo = req.app.locals.user;
+  const requestId: string = req.params.id;
+
+  try {
+    // Get the friend request
+    const friendRequest = await pb
+      .collection("friend_requests")
+      .getOne(requestId);
+
+    // Get the users
+    const userTo = await pb.collection("users").getOne(friendRequest.to);
+
+    // Verify if the user is valid
+    if (userTo.id !== userInfo.id) {
+      return res.status(400).json({ error: "You don't have permission" });
+    }
+
+    // Delete the friend request
+    await pb.collection("friend_requests").delete(requestId);
+
+    return res.status(200).json({ message: "Friend request declined" });
+  } catch (err) {
+    return res.status(400).json({ error: err });
+  }
+};
