@@ -47,7 +47,7 @@ export const createChannel = async (req: Request, res: Response) => {
 
   try {
     // Get the server
-    const server = await pb.collection("servers").get(serverId);
+    const server = await pb.collection("servers").getOne(serverId);
 
     // Check if the user is the owner of the server
     if (server.owner !== req.app.locals.user.id) {
@@ -58,10 +58,6 @@ export const createChannel = async (req: Request, res: Response) => {
 
     // Create the channel
     const channel = await pb.collection("channels").create(dataValidated.value);
-
-    // Add the channel to the server
-    server.channels.push(channel.id);
-    await pb.collection("servers").update(server);
 
     return res.status(201).json(channel);
   } catch (err) {
@@ -92,7 +88,7 @@ export const updateChannel = async (req: Request, res: Response) => {
 
   try {
     // Get the channel
-    const channel = await pb.collection("channels").get(channelId);
+    const channel = await pb.collection("channels").getOne(channelId);
 
     // Check if the user is the owner of the channel
     if (channel.owner !== req.app.locals.user.id) {
