@@ -50,7 +50,6 @@ export const register = async (req: Request, res: Response) => {
 
   // Add default values to the validated data
   dataValidated.value.emailVisibility = true;
-  dataValidated.value.verified = true;
 
   try {
     const user = await pb.collection("users").create(dataValidated.value);
