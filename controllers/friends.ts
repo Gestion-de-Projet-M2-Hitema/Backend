@@ -39,6 +39,11 @@ export const invite = async (req: Request, res: Response) => {
 
   const idFriend: string = dataValidated.value.user;
 
+  // Verify if the user is not himself
+  if (idFriend === userInfo.id) {
+    return res.sendStatus(400);
+  }
+
   try {
     const friendExists = await pb.collection("users").getOne(idFriend);
     const requestExists = await pb.collection("friend_requests").getFullList({
@@ -217,4 +222,4 @@ export const removeFriend = async (req: Request, res: Response) => {
   } catch (err) {
     return res.status(400).json({ error: err });
   }
-}
+};
