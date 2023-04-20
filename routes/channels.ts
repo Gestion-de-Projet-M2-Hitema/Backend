@@ -8,7 +8,7 @@ import { authGuard } from "../middlewares/auth.middleware";
 
 const router: Router = express.Router();
 
-router.post("/create", [authGuard], createChannel);
+router.post("/create/:id", [authGuard], createChannel);
 router.post("/update/:id", [authGuard], updateChannel);
 router.post("/delete/:id", [authGuard], deleteChannel);
 
