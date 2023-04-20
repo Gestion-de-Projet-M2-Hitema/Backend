@@ -98,9 +98,9 @@ export const updateChannel = async (req: Request, res: Response) => {
     }
 
     // Update the channel
-    await pb.collection("channels").update(dataValidated.value);
+    const newChannel = await pb.collection("channels").update(channelId, dataValidated.value);
 
-    return res.status(200).json(channel);
+    return res.status(200).json(newChannel);
   } catch (err) {
     return res.status(400).json({ error: err });
   }
