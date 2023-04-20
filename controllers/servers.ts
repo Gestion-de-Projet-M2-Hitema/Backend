@@ -134,3 +134,16 @@ export const list = async (req: Request, res: Response) => {
     return;
   }
 };
+
+// Get all servers
+export const getAll = async (req: Request, res: Response) => {
+  try {
+    const result = await pb.collection("servers").getFullList();
+
+    res.status(200).json(result);
+    return;
+  } catch (err: any) {
+    res.status(400);
+    return;
+  }
+};
