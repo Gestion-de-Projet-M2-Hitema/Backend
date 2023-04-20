@@ -133,3 +133,19 @@ export const deleteChannel = async (req: Request, res: Response) => {
     return res.status(400).json({ error: err });
   }
 }
+
+// List all channels of a server
+export const listChannels = async (req: Request, res: Response) => {
+  const serverId: string = req.params.id;
+
+  try {
+    // Get the channels
+    const channels = await pb.collection("channels").getFullList({
+      filter: `server="${serverId}"`
+    });
+
+    return res.status(200).json(channels);
+  } catch (err) {
+    return res.status(400).json({ error: err });
+  }
+}
