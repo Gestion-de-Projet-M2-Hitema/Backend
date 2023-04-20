@@ -194,3 +194,23 @@ export const listRequests = async (req: Request, res: Response) => {
     return;
   }
 };
+
+// Delete a friend
+export const removeFriend = async (req: Request, res: Response) => {
+  const userInfo = req.app.locals.user;
+  const friendId: string = req.params.id;
+
+  try {
+    // Get the user that requested deletion
+    const user = await pb.collection("users").getOne(userInfo.id);
+
+    // Remove the friend
+    await pb.collection("users").update(user.id, {
+      friends: user.friends.filter((item: string) => item != friendId),
+    });
+
+    return res.status(200).json({ message: "Friend removed" });
+  } catch (err) {
+    return res.status(400).json({ error: err });
+  }
+}
