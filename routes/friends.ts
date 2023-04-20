@@ -7,6 +7,7 @@ import {
   decline,
   list,
   listRequests,
+  removeFriend,
 } from "../controllers/friends";
 
 // Import middlewares
@@ -20,5 +21,7 @@ router.post("/decline/:id", [authGuard], decline);
 
 router.get("/list", [authGuard], list);
 router.get("/list-request", [authGuard], listRequests);
+
+router.delete("/:id", [authGuard], removeFriend);
 
 export = router;
