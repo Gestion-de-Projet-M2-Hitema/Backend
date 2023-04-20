@@ -13,6 +13,18 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 // Database
 const pb = require("../db");
 
+export type User = {
+  id: string;
+  avatar: string;
+  username: string;
+  email: string;
+  name: string;
+  emailVisibility: boolean;
+  verified: boolean;
+  created: Date;
+  updated: Date;
+};
+
 export const register = async (req: Request, res: Response) => {
   const payload: Object = req.body;
   const schema: ObjectSchema = joi
@@ -51,8 +63,7 @@ export const register = async (req: Request, res: Response) => {
 
     const token: string = jwt.sign({ id: user.id }, privateKey);
 
-    res.cookie("jwt", token, { maxAge: 7 * (24 * 60 * 60 * 1000) });
-    res.sendStatus(201);
+    res.status(201).json({ token: token });
   } catch (err: any) {
     const error: Record<string, any> = {};
 
@@ -112,22 +123,19 @@ export const login = async (req: Request, res: Response) => {
 
     // Set the URL of the avatar image
     if (user.avatar) {
-      user.avatar = pb.getFileUrl(user, user.avatar);
+      user.avatar = pb.files.getUrl(user, user.avatar);
     }
 
-    res.cookie("jwt", token, { maxAge: 7 * (24 * 60 * 60 * 1000) });
-    res
-      .status(200)
-      .json({ username: user.username, name: user.name, avatar: user.avatar });
+    res.status(200).json({
+      token: token,
+      username: user.username,
+      name: user.name,
+      avatar: user.avatar,
+    });
   } catch (err: any) {
     res.status(400).json({ error: "Incorrect email or password" });
     return;
   }
-};
-
-export const logout = (req: Request, res: Response) => {
-  res.cookie("jwt", "", { maxAge: 1 });
-  res.sendStatus(200);
 };
 
 // update user's informations
@@ -139,6 +147,8 @@ export const update = async (req: Request, res: Response) => {
     .object({
       username: joi.string().min(2).max(50).required(),
       name: joi.string().min(2).max(50).required(),
+      emailVisibility: joi.boolean(),
+      email: joi.string().email().max(255).required(),
     })
     .options({ abortEarly: false });
 
@@ -195,7 +205,7 @@ export const upload = async (req: Request, res: Response) => {
 
     // Set the URL of the avatar image
     if (user.avatar) {
-      user.avatar = pb.getFileUrl(user, user.avatar);
+      user.avatar = pb.files.getUrl(user, user.avatar);
     }
     res.status(200).json({ avatar: user.avatar });
   } catch (err: any) {
@@ -241,5 +251,99 @@ export const updatePassword = async (req: Request, res: Response) => {
     }
     res.status(400).json({ error: error });
     return;
+  }
+};
+
+// List all users paginated
+export const list = async (req: Request, res: Response) => {
+  // const page: number = parseInt(req.query.page as string) || 1;
+  // const limit: number = parseInt(req.query.limit as string) || 10;
+
+  const schema: ObjectSchema = joi
+    .object({
+      page: joi.number().min(1).required(),
+      limit: joi.number().min(1).required(),
+    })
+    .options({ abortEarly: false });
+
+  // Validate user's informations with Joi
+  const dataValidated: ValidationResult = schema.validate(req.query);
+
+  // Manage validation errors
+  if (dataValidated.error) {
+    const error: Record<string, any> = buildJoiError(
+      dataValidated.error.details
+    );
+    return res.status(400).json({ error: error });
+  }
+
+  const page: number = dataValidated.value.page;
+  const limit: number = dataValidated.value.limit;
+
+  // console.log(page, limit);
+
+  try {
+    const result = await pb.collection("users").getList(page, limit);
+
+    const items = result.items.map((user: User) => {
+      const avatar = user.avatar ? pb.files.getUrl(user, user.avatar) : null;
+      return {
+        ...user,
+        avatar: avatar,
+      };
+    });
+
+    const data = {
+      ...result,
+      items: items,
+    };
+
+    res.status(200).json(data);
+    return;
+  } catch (err: any) {
+    res.status(400);
+    return;
+  }
+};
+
+// Get user's informations
+export const get = async (req: Request, res: Response) => {
+  const userId: string = req.params.id;
+
+  try {
+    const user = await pb.collection("users").getOne(userId);
+
+    const avatar = user.avatar ? pb.files.getUrl(user, user.avatar) : null;
+
+    const data = {
+      ...user,
+      avatar: avatar,
+    };
+
+    res.status(200).json(data);
+    return;
+  } catch (err: any) {
+    res.status(400);
+    return;
+  }
+};
+
+// Get informations from connected user
+export const getMe = async (req: Request, res: Response) => {
+  const userInfo = req.app.locals.user;
+
+  try {
+    const user = await pb.collection("users").getOne(userInfo.id);
+
+    const avatar = user.avatar ? pb.files.getUrl(user, user.avatar) : null;
+
+    const data = {
+      ...user,
+      avatar: avatar,
+    };
+
+    return res.status(200).json(data);
+  } catch (err: any) {
+    return res.status(400);
   }
 };
