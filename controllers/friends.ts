@@ -202,11 +202,15 @@ export const removeFriend = async (req: Request, res: Response) => {
 
   try {
     // Get the user that requested deletion
-    const user = await pb.collection("users").getOne(userInfo.id);
+    const userFrom = await pb.collection("users").getOne(userInfo.id);
+    const userTo = await pb.collection("users").getOne(friendId);
 
     // Remove the friend
-    await pb.collection("users").update(user.id, {
-      friends: user.friends.filter((item: string) => item != friendId),
+    await pb.collection("users").update(userFrom.id, {
+      friends: userFrom.friends.filter((item: string) => item != friendId),
+    });
+    await pb.collection("users").update(userTo.id, {
+      friends: userTo.friends.filter((item: string) => item != userInfo.id),
     });
 
     return res.status(200).json({ message: "Friend removed" });
