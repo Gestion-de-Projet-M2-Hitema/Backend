@@ -141,3 +141,22 @@ export const list = async (req: Request, res: Response) => {
     return res.status(400).json({ error: err });
   }
 }
+
+// Get all server requests for a user
+export const get = async (req: Request, res: Response) => {
+  const userId: string = req.app.locals.user.id;
+
+  try {
+    // Get the server requests
+    const serverRequests = await pb
+      .collection("server_requests")
+      .getFullList({
+        filter: `from='${userId}'`
+      });
+
+    return res.status(200).json(serverRequests);
+  }
+  catch (err) {
+    return res.status(400).json({ error: err });
+  }
+}

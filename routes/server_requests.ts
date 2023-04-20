@@ -1,7 +1,7 @@
 import express, { Router } from "express";
 
 // Import controllers
-import { create, accept, decline, list } from "../controllers/server_requests";
+import { create, accept, decline, list, get } from "../controllers/server_requests";
 
 // Import middlewares
 import { authGuard } from "../middlewares/auth.middleware";
@@ -13,5 +13,6 @@ router.post("/accept/:id", [authGuard], accept);
 router.post("/decline/:id", [authGuard], decline);
 
 router.get("/list/:id", [authGuard], list);
+router.get("/get", [authGuard], get);
 
 export = router;
