@@ -132,7 +132,8 @@ export const list = async (req: Request, res: Response) => {
     const serverRequests = await pb
       .collection("server_requests")
       .getList(page, limit, {
-        filter: `to='${serverId}'`
+        filter: `to='${serverId}'`,
+        expand: "from"
       });
 
     return res.status(200).json(serverRequests);
