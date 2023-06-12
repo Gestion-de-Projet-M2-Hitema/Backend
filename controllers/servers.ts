@@ -147,3 +147,52 @@ export const getAll = async (req: Request, res: Response) => {
     return;
   }
 };
+
+// Ban user from server
+export const banUser = async (req: Request, res: Response) => {
+  const userInfo = req.app.locals.user;
+  const serverId: string = req.params.id;
+  const userId: string = req.params.idUser;
+
+  if (userInfo.id == userId) {
+    return res.status(400).json({ error: "You cannot ban yourself" });
+  }
+
+  try {
+    // Retrieve the server
+    const server = await pb.collection("servers").getOne(serverId);
+    if (!server) {
+      return res.status(404).json({ error: "Server not found" });
+    }
+
+    // Verify if the user who have made the request is the owner
+    if (server.owner != userInfo.id) {
+      return res
+        .status(403)
+        .json({ error: "You are not the owner of this server" });
+    }
+
+    // Retrieve the user
+    const user = await pb.collection("users").getOne(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Verify if the user is a member of the server
+    if (!server.members.includes(userId)) {
+      return res
+        .status(400)
+        .json({ error: "User is not a member of the server" });
+    }
+
+    // Update the server
+    const data = {
+      members: server.members.filter((id: string) => id != userId),
+    };
+
+    const newServer = await pb.collection("servers").update(serverId, data);
+    return res.status(200).json(newServer);
+  } catch (err) {
+    return res.status(400).json({ error: err });
+  }
+};
