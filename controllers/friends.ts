@@ -185,6 +185,7 @@ export const listRequests = async (req: Request, res: Response) => {
           : null;
 
         requests.push({
+          idRequest: request.id,
           id: friend.id,
           username: friend.username,
           avatar: avatar,
